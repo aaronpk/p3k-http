@@ -78,7 +78,7 @@ class HTTP {
   }
 
   private static function _parse_headers($headers) {
-    $retVal = array();
+    $retVal = [];
     $fields = explode("\r\n", preg_replace('/\x0D\x0A[\x09\x20]+/', ' ', $headers));
     foreach($fields as $field) {
       if(preg_match('/([^:]+): (.+)/m', $field, $match)) {
@@ -91,7 +91,7 @@ class HTTP {
         }, strtolower(trim($match[1])));
         if(isset($retVal[$match[1]])) {
           if(!is_array($retVal[$match[1]]))
-            $retVal[$match[1]] = array($retVal[$match[1]]);
+            $retVal[$match[1]] = [$retVal[$match[1]]];
           $retVal[$match[1]][] = $match[2];
         } else {
           $retVal[$match[1]] = trim($match[2]);

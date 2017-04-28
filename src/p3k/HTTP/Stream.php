@@ -72,14 +72,14 @@ class Stream implements Transport {
       ];
     }
 
-    return array(
+    return [
       'code' => self::parse_response_code($http_response_header),
       'header' => implode("\r\n", $http_response_header),
       'body' => $body,
       'error' => $error ? $error['code'] : false,
       'error_description' => $error ? $error['description'] : false,
       'url' => $url,
-    );
+    ];
   }
 
   private function _stream_context($method, $url, $body=false, $headers=[]) {
@@ -115,7 +115,7 @@ class Stream implements Transport {
         $code = $match[1];
       }
     }    
-    return $code;
+    return (int)$code;
   }
 
 }

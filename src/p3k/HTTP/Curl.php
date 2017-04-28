@@ -22,7 +22,7 @@ class Curl implements Transport {
     $response = curl_exec($ch);
     $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
     $header_str = trim(substr($response, 0, $header_size));
-    return array(
+    return [
       'code' => curl_getinfo($ch, CURLINFO_HTTP_CODE),
       'header' => $header_str,
       'body' => substr($response, $header_size),
@@ -30,7 +30,7 @@ class Curl implements Transport {
       'error_description' => curl_error($ch),
       'url' => curl_getinfo($ch, CURLINFO_EFFECTIVE_URL),
       'debug' => $response
-    );
+    ];
   }
 
   public function post($url, $body, $headers=[]) {
@@ -43,7 +43,7 @@ class Curl implements Transport {
     $response = curl_exec($ch);
     $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
     $header_str = trim(substr($response, 0, $header_size));
-    return array(
+    return [
       'code' => curl_getinfo($ch, CURLINFO_HTTP_CODE),
       'header' => $header_str,
       'body' => substr($response, $header_size),
@@ -51,7 +51,7 @@ class Curl implements Transport {
       'error_description' => curl_error($ch),
       'url' => curl_getinfo($ch, CURLINFO_EFFECTIVE_URL),
       'debug' => $response
-    );
+    ];
   }
 
   public function head($url, $headers=[]) {
@@ -61,14 +61,14 @@ class Curl implements Transport {
       curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     curl_setopt($ch, CURLOPT_NOBODY, true);
     $response = curl_exec($ch);
-    return array(
+    return [
       'code' => curl_getinfo($ch, CURLINFO_HTTP_CODE),
       'header' => trim($response),
       'error' => self::error_string_from_code(curl_errno($ch)),
       'error_description' => curl_error($ch),
       'url' => curl_getinfo($ch, CURLINFO_EFFECTIVE_URL),
       'debug' => $response
-    );
+    ];
   }
 
   private function _set_curlopts($ch, $url) {

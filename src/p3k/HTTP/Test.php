@@ -43,14 +43,14 @@ class Test implements Transport {
 
   public function head($url, $headers=[]) {
     $response = $this->_read_file($url);
-    return array(
-      'code' => $response['code'],
+    return [
+      'code' => (int)$response['code'],
       'headers' => $response['headers'],
       'rels' => $response['rels'],
       'error' => '',
       'error_description' => '',
       'url' => $response['url']
-    );
+    ];
   }
 
   private function _read_file($url) {
@@ -100,19 +100,19 @@ class Test implements Transport {
       $effectiveUrl = $url;
     }
 
-    return array(
-      'code' => $code,
+    return [
+      'code' => (int)$code,
       'headers' => $parsedHeaders,
       'rels' => \IndieWeb\http_rels($headers),
       'body' => $body,
       'error' => (isset($parsedHeaders['X-Test-Error']) ? $parsedHeaders['X-Test-Error'] : ''),
       'error_description' => '',
       'url' => $effectiveUrl
-    );
+    ];
   }
 
   private static function _parse_headers($headers) {
-    $retVal = array();
+    $retVal = [];
     $fields = explode("\r\n", preg_replace('/\x0D\x0A[\x09\x20]+/', ' ', $headers));
     foreach($fields as $field) {
       if(preg_match('/([^:]+): (.+)/m', $field, $match)) {
@@ -125,7 +125,7 @@ class Test implements Transport {
         }, strtolower(trim($match[1])));
         if(isset($retVal[$match[1]])) {
           if(!is_array($retVal[$match[1]]))
-            $retVal[$match[1]] = array($retVal[$match[1]]);
+            $retVal[$match[1]] = [$retVal[$match[1]]];
           $retVal[$match[1]][] = $match[2];
         } else {
           $retVal[$match[1]] = trim($match[2]);
