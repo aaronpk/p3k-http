@@ -16,7 +16,7 @@
   },
   "autoload": {
     "psr-4": {
-      "p3k\\HTTP\\": "src/p3k"
+      "p3k\\": "src/p3k"
     }
   },
   "autoload-dev": {
