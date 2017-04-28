@@ -23,19 +23,19 @@ class Stream implements Transport {
   }
 
   public function get($url, $headers=[]) {
-    set_error_handler("p3k\HTTPStream::exception_error_handler");
+    set_error_handler("p3k\HTTP\Stream::exception_error_handler");
     $context = $this->_stream_context('GET', $url, false, $headers);
     return $this->_fetch($url, $context);
   }
 
   public function post($url, $body, $headers=[]) {
-    set_error_handler("p3k\HTTPStream::exception_error_handler");
+    set_error_handler("p3k\HTTP\Stream::exception_error_handler");
     $context = $this->_stream_context('POST', $url, $body, $headers);
     return $this->_fetch($url, $context);
   }
 
   public function head($url, $headers=[]) {
-    set_error_handler("p3k\HTTPStream::exception_error_handler");
+    set_error_handler("p3k\HTTP\Stream::exception_error_handler");
     $context = $this->_stream_context('HEAD', $url, false, $headers);
     return $this->_fetch($url, $context);
   }
@@ -97,9 +97,7 @@ class Stream implements Transport {
       $options['header'] = implode("\r\n", $headers);
     }
 
-    // Special-case appspot.com URLs to not follow redirects.
-    // https://cloud.google.com/appengine/docs/php/urlfetch/
-    if(should_follow_redirects($url)) {
+    if($this->_max_redirects > 0) {
       $options['follow_location'] = 1;
       $options['max_redirects'] = $this->_max_redirects;
     } else {

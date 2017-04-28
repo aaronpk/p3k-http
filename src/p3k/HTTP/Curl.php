@@ -74,7 +74,8 @@ class Curl implements Transport {
   private function _set_curlopts($ch, $url) {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HEADER, true);
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    if($this->_max_redirects > 0)
+      curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt($ch, CURLOPT_MAXREDIRS, $this->_max_redirects);
     curl_setopt($ch, CURLOPT_TIMEOUT_MS, round($this->_timeout * 1000));
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 2000);
