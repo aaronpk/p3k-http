@@ -20,6 +20,10 @@ class HTTP {
     }
   }
 
+  public function set_user_agent($ua) {
+    $this->_user_agent = $ua;
+  }
+
   public function set_max_redirects($max) {
     $this->_max_redirects = $max;
   }
@@ -35,6 +39,9 @@ class HTTP {
   public function get($url, $headers=[]) {
     $this->_transport->set_timeout($this->_timeout);
     $this->_transport->set_max_redirects($this->_max_redirects);
+    if($this->_user_agent) {
+      $headers[] = 'User-Agent: ' . $this->_user_agent;
+    }
     $response = $this->_transport->get($url, $headers);
     $response = $this->_build_response($response);
     return $response;
@@ -43,15 +50,21 @@ class HTTP {
   public function post($url, $body, $headers=[]) {
     $this->_transport->set_timeout($this->_timeout);
     $this->_transport->set_max_redirects($this->_max_redirects);
+    if($this->_user_agent) {
+      $headers[] = 'User-Agent: ' . $this->_user_agent;
+    }
     $response = $this->_transport->post($url, $body, $headers);
     $response = $this->_build_response($response);
     return $response;
   }
 
-  public function head($url) {
+  public function head($url, $headers=[]) {
     $this->_transport->set_timeout($this->_timeout);
     $this->_transport->set_max_redirects($this->_max_redirects);
-    $response = $this->_transport->head($url);
+    if($this->_user_agent) {
+      $headers[] = 'User-Agent: ' . $this->_user_agent;
+    }
+    $response = $this->_transport->head($url, $headers);
     $response = $this->_build_response($response);
     return $response;
   }

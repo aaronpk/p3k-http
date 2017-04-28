@@ -54,9 +54,11 @@ class Curl implements Transport {
     );
   }
 
-  public function head($url) {
+  public function head($url, $headers=[]) {
     $ch = curl_init($url);
     $this->_set_curlopts($ch, $url);
+    if($headers)
+      curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     curl_setopt($ch, CURLOPT_NOBODY, true);
     $response = curl_exec($ch);
     return array(

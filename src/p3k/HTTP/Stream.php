@@ -34,9 +34,9 @@ class Stream implements Transport {
     return $this->_fetch($url, $context);
   }
 
-  public function head($url) {
+  public function head($url, $headers=[]) {
     set_error_handler("p3k\HTTPStream::exception_error_handler");
-    $context = $this->_stream_context('HEAD', $url);
+    $context = $this->_stream_context('HEAD', $url, false, $headers);
     return $this->_fetch($url, $context);
   }
 

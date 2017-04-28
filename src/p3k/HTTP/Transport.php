@@ -24,9 +24,9 @@ interface Transport {
     * unknown
   */
 
-  public function get($url, $headers);
+  public function get($url, $headers=[]);
   public function post($url, $body, $headers=[]);
-  public function head($url);
+  public function head($url, $headers=[]);
 
   public function set_timeout($timeout);
   public function set_max_redirects($max_redirects);
