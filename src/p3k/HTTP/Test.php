@@ -57,10 +57,10 @@ class Test implements Transport {
     $parts = parse_url($url);
     if($parts['path']) {
       $parts['path'] = '/'.str_replace('/','_',substr($parts['path'],1));
-      $url = self::_build_url($parts);
+      $filepathurl = self::_build_url($parts);
     }
 
-    $filename = $this->_testDataPath.preg_replace('/https?:\/\//', '', $url);
+    $filename = $this->_testDataPath.preg_replace('/https?:\/\//', '', $filepathurl);
     if(!file_exists($filename)) {
       $filename = $this->_testDataPath.'404.response.txt';
     }
