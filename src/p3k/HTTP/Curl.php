@@ -5,6 +5,7 @@ class Curl implements Transport {
 
   protected $_timeout = 4;
   protected $_max_redirects = 8;
+  static protected $_http_version = null;
 
   public function set_max_redirects($max) {
     $this->_max_redirects = $max;
@@ -79,6 +80,20 @@ class Curl implements Transport {
     curl_setopt($ch, CURLOPT_MAXREDIRS, $this->_max_redirects);
     curl_setopt($ch, CURLOPT_TIMEOUT_MS, round($this->_timeout * 1000));
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 2000);
+    curl_setopt($ch, CURLOPT_HTTP_VERSION, $this->_http_version());
+  }
+
+  private function _http_version() {
+    if (static::$_http_version !== null)
+      return static::$_http_version;
+    if (defined('CURL_HTTP_VERSION_2')) { // PHP 7.0.7
+      static::$_http_version = CURL_HTTP_VERSION_2;
+    } else if (defined('CURL_HTTP_VERSION_2_0')) { // Recommended in online articles
+      static::$_http_version = CURL_HTTP_VERSION_2_0;
+    } else { // Linked curl might be newer than PHP, send (current) INT value anyway.
+      static::$_http_version = 3;
+    }
+    return static::$_http_version;
   }
 
   public static function error_string_from_code($code) {
