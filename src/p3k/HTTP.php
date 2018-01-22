@@ -73,7 +73,6 @@ class HTTP {
     // Parses the HTTP headers and adds the "headers" and "rels" response keys
     $response['headers'] = self::_parse_headers($response['header']);
     $response['rels'] = \IndieWeb\http_rels($response['header']);
-    unset($response['header']);
     return $response;
   }
 

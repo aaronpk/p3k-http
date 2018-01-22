@@ -45,6 +45,7 @@ class Test implements Transport {
     $response = $this->_read_file($url);
     return [
       'code' => (int)$response['code'],
+      'header' => $response['header'],
       'headers' => $response['headers'],
       'rels' => $response['rels'],
       'error' => '',
@@ -88,6 +89,7 @@ class Test implements Transport {
       } else {
         return [
           'code' => 0,
+          'header' => $headers,
           'headers' => $parsedHeaders,
           'rels' => \IndieWeb\http_rels($headers),
           'body' => $body,
@@ -102,6 +104,7 @@ class Test implements Transport {
 
     return [
       'code' => (int)$code,
+      'header' => $headers,
       'headers' => $parsedHeaders,
       'rels' => \IndieWeb\http_rels($headers),
       'body' => $body,
