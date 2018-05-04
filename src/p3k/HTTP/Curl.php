@@ -10,6 +10,7 @@ class Curl implements Transport {
   private $_last_seen_code = null;
   private $_current_headers = [];
   private $_current_redirects = [];
+  private $_debug_header = '';
 
   public function set_max_redirects($max) {
     $this->_max_redirects = $max;
@@ -32,7 +33,8 @@ class Curl implements Transport {
       'redirects' => $this->_current_redirects,
       'error' => self::error_string_from_code(curl_errno($ch)),
       'error_description' => curl_error($ch),
-      'url' => $this->_last_seen_url
+      'url' => $this->_last_seen_url,
+      'debug' => $this->_debug_header . "\r\n" . $response
     ];
   }
 
@@ -51,7 +53,8 @@ class Curl implements Transport {
       'redirects' => $this->_current_redirects,
       'error' => self::error_string_from_code(curl_errno($ch)),
       'error_description' => curl_error($ch),
-      'url' => $this->_last_seen_url
+      'url' => $this->_last_seen_url,
+      'debug' => $this->_debug_header . "\r\n" . $response
     ];
   }
 
@@ -68,7 +71,8 @@ class Curl implements Transport {
       'redirects' => $this->_current_redirects,
       'error' => self::error_string_from_code(curl_errno($ch)),
       'error_description' => curl_error($ch),
-      'url' => $this->_last_seen_url
+      'url' => $this->_last_seen_url,
+      'debug' => $this->_debug_header . "\r\n" . $response
     ];
   }
 
@@ -96,6 +100,7 @@ class Curl implements Transport {
   }
 
   private function _header_function($curl, $header) {
+    $this->_debug_header .= $header;
     $current_url = curl_getinfo($curl, CURLINFO_EFFECTIVE_URL);
     if ($current_url !== $this->_last_seen_url) {
         if ($this->_last_seen_url !== null) {
