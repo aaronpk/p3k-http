@@ -104,7 +104,13 @@ class Curl implements Transport {
     $current_url = curl_getinfo($curl, CURLINFO_EFFECTIVE_URL);
     if ($current_url !== $this->_last_seen_url) {
         if ($this->_last_seen_url !== null) {
-            $this->_current_redirects[] = [$this->_last_seen_code, $this->_last_seen_url];
+            $this->_current_redirects[] = [
+                'code' => $this->_last_seen_code,
+                'from' => $this->_last_seen_url,
+                'to' => $current_url,
+            ];
+        } else {
+            $this->_current_redirects = [];
         }
         $this->_current_headers = [];
         $this->_last_seen_url = $current_url;
