@@ -88,7 +88,7 @@ class Test implements Transport {
         return $this->_read_file($effectiveUrl);
       } else {
         return [
-          'code' => 0,
+          'code' => (int)$code,
           'header' => $headers,
           'headers' => $parsedHeaders,
           'rels' => \IndieWeb\http_rels($headers),
