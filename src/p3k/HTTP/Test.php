@@ -56,12 +56,12 @@ class Test implements Transport {
 
   private function _read_file($url) {
     $parts = parse_url($url);
-    if($parts['path']) {
+    if(!empty($parts['path'])) {
       $parts['path'] = '/'.str_replace('/','_',substr($parts['path'],1));
-      if(!isset($parts['path']) || $parts['path'] == '/')
-        $parts['path'] = '/_';
-      $filepathurl = self::_build_url($parts);
     }
+    if(!isset($parts['path']) || $parts['path'] == '/')
+      $parts['path'] = '/_';
+    $filepathurl = self::_build_url($parts);
 
     $filename = $this->_testDataPath.preg_replace('/https?:\/\//', '', $filepathurl);
     if(!file_exists($filename)) {
