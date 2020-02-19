@@ -58,6 +58,8 @@ class Test implements Transport {
     $parts = parse_url($url);
     if($parts['path']) {
       $parts['path'] = '/'.str_replace('/','_',substr($parts['path'],1));
+      if($parts['path'] == '/')
+        $parts['path'] = '/_';
       $filepathurl = self::_build_url($parts);
     }
 
