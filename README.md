@@ -45,6 +45,7 @@ The get/post/head functions will return an array with the following properties:
 * `headers` - array, the HTTP headers returned
 * `rels` - array, the parsed HTTP rel values from any `Link` headers
 * `body` - string, the body of the HTTP response, or false/omit for a HEAD request
+* `redirects` - array, the redirects followed, or omitted when not supported
 * `error` - string, an error string. see below for the enumerated list.
 * `error_description` - string,
 * `url` - string, the final URL retrieved after following any redirects
@@ -112,6 +113,31 @@ The `rels` key will be the parsed version of any HTTP `Link` headers that contai
         )
 ```
 
+#### `redirects`
+
+The `redirects` key will be an array of all the redirects followed to retrieve the final response. This key may be omitted if the transport does not support retrieving the data.
+
+```php
+Array
+(
+    [0] => Array
+        (
+            [code] => 301
+            [from] => http://aaronpk.com/
+            [to] => https://aaronpk.com/
+        )
+
+    [1] => Array
+        (
+            [code] => 301
+            [from] => https://aaronpk.com/
+            [to] => https://aaronparecki.com/
+        )
+
+)
+```
+
+The `code` key within a redirect array is the HTTP status code that came with it. This can be used for separating permanent redirects (301) from temporary ones (302).
 
 ### Options
 

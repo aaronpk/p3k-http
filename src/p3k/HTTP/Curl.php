@@ -6,6 +6,11 @@ class Curl implements Transport {
   protected $_timeout = 4;
   protected $_max_redirects = 8;
   static protected $_http_version = null;
+  private $_last_seen_url = null;
+  private $_last_seen_code = null;
+  private $_current_headers = [];
+  private $_current_redirects = [];
+  private $_debug_header = '';
 
   public function set_max_redirects($max) {
     $this->_max_redirects = $max;
@@ -21,16 +26,15 @@ class Curl implements Transport {
     if($headers)
       curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     $response = curl_exec($ch);
-    $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-    $header_str = trim(substr($response, 0, $header_size));
     return [
       'code' => curl_getinfo($ch, CURLINFO_HTTP_CODE),
-      'header' => $header_str,
-      'body' => substr($response, $header_size),
+      'header' => implode("\r\n", array_map(function ($a) { return $a[0] . ': ' . $a[1]; }, $this->_current_headers)),
+      'body' => $response,
+      'redirects' => $this->_current_redirects,
       'error' => self::error_string_from_code(curl_errno($ch)),
       'error_description' => curl_error($ch),
-      'url' => curl_getinfo($ch, CURLINFO_EFFECTIVE_URL),
-      'debug' => $response
+      'url' => $this->_last_seen_url,
+      'debug' => $this->_debug_header . "\r\n" . $response
     ];
   }
 
@@ -42,16 +46,15 @@ class Curl implements Transport {
     if($headers)
       curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     $response = curl_exec($ch);
-    $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-    $header_str = trim(substr($response, 0, $header_size));
     return [
       'code' => curl_getinfo($ch, CURLINFO_HTTP_CODE),
-      'header' => $header_str,
-      'body' => substr($response, $header_size),
+      'header' => implode("\r\n", array_map(function ($a) { return $a[0] . ': ' . $a[1]; }, $this->_current_headers)),
+      'body' => $response,
+      'redirects' => $this->_current_redirects,
       'error' => self::error_string_from_code(curl_errno($ch)),
       'error_description' => curl_error($ch),
-      'url' => curl_getinfo($ch, CURLINFO_EFFECTIVE_URL),
-      'debug' => $response
+      'url' => $this->_last_seen_url,
+      'debug' => $this->_debug_header . "\r\n" . $response
     ];
   }
 
@@ -64,23 +67,23 @@ class Curl implements Transport {
     $response = curl_exec($ch);
     return [
       'code' => curl_getinfo($ch, CURLINFO_HTTP_CODE),
-      'header' => trim($response),
+      'header' => implode("\r\n", array_map(function ($a) { return $a[0] . ': ' . $a[1]; }, $this->_current_headers)),
+      'redirects' => $this->_current_redirects,
       'error' => self::error_string_from_code(curl_errno($ch)),
       'error_description' => curl_error($ch),
-      'url' => curl_getinfo($ch, CURLINFO_EFFECTIVE_URL),
-      'debug' => $response
+      'url' => $this->_last_seen_url,
+      'debug' => $this->_debug_header . "\r\n" . $response
     ];
   }
 
   private function _set_curlopts($ch, $url) {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HEADER, true);
-    if($this->_max_redirects > 0)
-      curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, $this->_max_redirects > 0);
     curl_setopt($ch, CURLOPT_MAXREDIRS, $this->_max_redirects);
     curl_setopt($ch, CURLOPT_TIMEOUT_MS, round($this->_timeout * 1000));
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 2000);
     curl_setopt($ch, CURLOPT_HTTP_VERSION, $this->_http_version());
+    curl_setopt($ch, CURLOPT_HEADERFUNCTION, [$this, '_header_function']);
   }
 
   private function _http_version() {
@@ -94,6 +97,32 @@ class Curl implements Transport {
       static::$_http_version = 3;
     }
     return static::$_http_version;
+  }
+
+  private function _header_function($curl, $header) {
+    $this->_debug_header .= $header;
+    $current_url = curl_getinfo($curl, CURLINFO_EFFECTIVE_URL);
+    if ($current_url !== $this->_last_seen_url) {
+        if ($this->_last_seen_url !== null) {
+            $this->_current_redirects[] = [
+                'code' => $this->_last_seen_code,
+                'from' => $this->_last_seen_url,
+                'to' => $current_url,
+            ];
+        } else {
+            $this->_current_redirects = [];
+        }
+        $this->_current_headers = [];
+        $this->_last_seen_url = $current_url;
+        $this->_last_seen_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    }
+    $length = strlen($header);
+    $header = explode(':', $header, 2);
+    if (count($header) !== 2) {
+      return $length;
+    }
+    $this->_current_headers[] = array_map('trim', [$header[0], $header[1]]);
+    return $length;
   }
 
   public static function error_string_from_code($code) {
