@@ -77,6 +77,7 @@ class Curl implements Transport {
     curl_setopt($ch, CURLOPT_HEADER, true);
     if($this->_max_redirects > 0)
       curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_POSTREDIR, 7); // don't change POST to GET on HTTP 301/302/303 redirects
     curl_setopt($ch, CURLOPT_MAXREDIRS, $this->_max_redirects);
     curl_setopt($ch, CURLOPT_TIMEOUT_MS, round($this->_timeout * 1000));
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 2000);
