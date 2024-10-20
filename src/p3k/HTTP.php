@@ -69,6 +69,17 @@ class HTTP {
     return $response;
   }
 
+  public function put($url, $body, $headers=[]) {
+    $this->_transport->set_timeout($this->_timeout);
+    $this->_transport->set_max_redirects($this->_max_redirects);
+    if($this->_user_agent) {
+      $headers[] = 'User-Agent: ' . $this->_user_agent;
+    }
+    $response = $this->_transport->put($url, $body, $headers);
+    $response = $this->_build_response($response);
+    return $response;
+  }
+
   private function _build_response($response) {
     // Parses the HTTP headers and adds the "headers" and "rels" response keys
     $response['headers'] = self::_parse_headers($response['header']);

@@ -41,6 +41,10 @@ class Test implements Transport {
     return $this->_read_file($url);
   }
 
+  public function put($url, $body, $headers=[]) {
+    return $this->_read_file($url);
+  }
+
   public function head($url, $headers=[]) {
     $response = $this->_read_file($url);
     return [

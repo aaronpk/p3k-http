@@ -26,6 +26,7 @@ interface Transport {
 
   public function get($url, $headers=[]);
   public function post($url, $body, $headers=[]);
+  public function put($url, $body, $headers=[]);
   public function head($url, $headers=[]);
 
   public function set_timeout($timeout);
