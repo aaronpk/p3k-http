@@ -9,7 +9,7 @@ class HTTP {
   private $_transport;
   private $_user_agent;
 
-  public function __construct(?$user_agent=null, ?HTTP\Transport $transport=null) {
+  public function __construct($user_agent=null, ?HTTP\Transport $transport=null) {
     if($user_agent) {
       $this->_user_agent = $user_agent;
     }
