@@ -37,6 +37,42 @@ $headers = [
 $response = $http->head('http://example.com/', $headers);
 ```
 
+### Safe mode
+
+When the URLs you fetch come from other people (a user's website, a
+discovered endpoint, a link in a post), turn on safe mode so they cannot
+point your server at itself or at your private network:
+
+```php
+$http = new p3k\HTTP();
+$http->set_safe_mode(true);
+```
+
+In safe mode:
+
+* only `http` and `https` URLs are fetched (no `file`, `gopher`, `dict`, …)
+* the host must resolve only to public addresses; loopback, private, link-local
+  and other reserved ranges are refused, as are hosts written as unusual IP
+  forms like `2130706433` or `0x7f.1`
+* curl connects to exactly the addresses that were checked, so a DNS answer
+  that changes between the check and the request makes no difference
+* redirects are followed one at a time and every hop is checked the same way;
+  `Authorization`, `Proxy-Authorization` and `Cookie` headers are dropped when a
+  redirect goes to a different origin
+
+A refused request makes no connection and returns `code` 0 with `error` set to
+`blocked_url` (or `dns_error` when the host does not resolve).
+
+To reach a private server on purpose, such as a development site on your LAN,
+allow it by hostname, address or CIDR range:
+
+```php
+$http->set_safe_mode(true, ['dev.example.com', '10.11.11.0/24']);
+```
+
+Custom transports get the same checks. A transport that implements
+`p3k\HTTP\Pinnable` is also held to the checked addresses, as the curl transport is.
+
 ### Response
 
 The get/post/head functions will return an array with the following properties:

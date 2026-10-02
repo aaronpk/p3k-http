@@ -1,10 +1,11 @@
 <?php
 namespace p3k\HTTP;
 
-class Curl implements Transport {
+class Curl implements Transport, Pinnable {
 
   protected $_timeout = 4;
   protected $_max_redirects = 8;
+  protected $_pinned = null;
   static protected $_http_version = null;
 
   public function set_max_redirects($max) {
@@ -13,6 +14,10 @@ class Curl implements Transport {
 
   public function set_timeout($timeout) {
     $this->_timeout = $timeout;
+  }
+
+  public function pin_addresses($resolve) {
+    $this->_pinned = $resolve;
   }
 
   public function get($url, $headers=[]) {
@@ -103,6 +108,17 @@ class Curl implements Transport {
     curl_setopt($ch, CURLOPT_TIMEOUT_MS, round($this->_timeout * 1000));
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 2000);
     curl_setopt($ch, CURLOPT_HTTP_VERSION, $this->_http_version());
+    if($this->_pinned !== null) {
+      if(defined('CURLOPT_PROTOCOLS_STR')) {
+        curl_setopt($ch, CURLOPT_PROTOCOLS_STR, 'http,https');
+        curl_setopt($ch, CURLOPT_REDIR_PROTOCOLS_STR, 'http,https');
+      } else {
+        curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+        curl_setopt($ch, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+      }
+      curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+      curl_setopt($ch, CURLOPT_RESOLVE, $this->_pinned);
+    }
   }
 
   private function _http_version() {

@@ -21,6 +21,7 @@ interface Transport {
     * ssl_cert_error
     * ssl_unsupported_cipher
     * too_many_redirects
+    * blocked_url (from HTTP in safe mode, never from a transport)
     * unknown
   */
 
