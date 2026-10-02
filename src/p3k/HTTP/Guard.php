@@ -14,6 +14,18 @@ class Guard {
   // read as an IP address. Refuse them rather than guess which one.
   const NUMERIC_HOST = '/^(0x[0-9a-f]*|[0-9]+)(\.(0x[0-9a-f]*|[0-9]+))*\.?$/i';
 
+  // Addresses that are not on the public internet: the IANA IPv4 and IPv6
+  // special-purpose registries, plus multicast. Listed here rather than
+  // left to FILTER_FLAG_GLOBAL_RANGE, which needs PHP 8.2, so that every
+  // PHP version refuses the same addresses.
+  const NON_PUBLIC = [
+    '0.0.0.0/8', '10.0.0.0/8', '100.64.0.0/10', '127.0.0.0/8', '169.254.0.0/16',
+    '172.16.0.0/12', '192.0.0.0/24', '192.0.2.0/24', '192.88.99.0/24', '192.168.0.0/16',
+    '198.18.0.0/15', '198.51.100.0/24', '203.0.113.0/24', '224.0.0.0/4', '240.0.0.0/4',
+    '::/128', '::1/128', '::ffff:0:0/96', '64:ff9b:1::/48', '100::/64', '2001::/23',
+    '2001:db8::/32', '3fff::/20', '5f00::/16', 'fc00::/7', 'fe80::/10', 'fec0::/10', 'ff00::/8',
+  ];
+
   private $_allow_hosts = [];
   private $_allow_cidrs = [];
   private $_resolver;
@@ -90,8 +102,13 @@ class Guard {
 
   /** Whether an address is on the public internet, looking inside IPv6 forms that carry an IPv4 address. */
   public static function is_public($address) {
-    if(!filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_GLOBAL_RANGE))
+    if(!filter_var($address, FILTER_VALIDATE_IP))
       return false;
+
+    foreach(self::NON_PUBLIC as $cidr) {
+      if(self::in_cidr($address, $cidr))
+        return false;
+    }
 
     $embedded = self::_embedded_ipv4($address);
     if($embedded !== null)
@@ -125,13 +142,13 @@ class Guard {
     return self::is_public($address);
   }
 
-  // NAT64 (64:ff9b::/96, 64:ff9b:1::/48) and 6to4 (2002::/16) addresses
-  // reach an IPv4 address, which must be public too.
+  // NAT64 (64:ff9b::/96) and 6to4 (2002::/16) addresses reach an IPv4
+  // address, which must be public too.
   private static function _embedded_ipv4($address) {
     $bin = @inet_pton($address);
     if($bin === false || strlen($bin) !== 16)
       return null;
-    if(self::in_cidr($address, '64:ff9b::/96') || self::in_cidr($address, '64:ff9b:1::/48'))
+    if(self::in_cidr($address, '64:ff9b::/96'))
       return inet_ntop(substr($bin, 12, 4));
     if(self::in_cidr($address, '2002::/16'))
       return inet_ntop(substr($bin, 2, 4));
