@@ -33,7 +33,7 @@ class SafeModeTest extends TestCase {
     $http = $this->http(['https://b.example/' => [200, '', 'ok']], $transport);
     $response = $http->get('https://b.example/');
     $this->assertSame(200, $response['code']);
-    $this->assertSame(['b.example:443:93.184.216.35', 'b.example:443:[2606:2800:220:1::]'], $transport->requests[0]['pinned']);
+    $this->assertSame(['b.example:443:93.184.216.35,[2606:2800:220:1::]'], $transport->requests[0]['pinned']);
     $this->assertSame(0, $transport->max_redirects);
   }
 

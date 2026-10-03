@@ -44,6 +44,20 @@ class CurlPinningTest extends TestCase {
     $this->assertSame('host=pinned.example:' . self::$port, $response['body']);
   }
 
+  // curl keeps only the last CURLOPT_RESOLVE entry for a host and port, so
+  // every resolved address has to go in a single entry. Otherwise a host with
+  // both IPv6 and IPv4 addresses is only tried on the last one.
+  public function testTriesEveryPinnedAddress() {
+    $http = new HTTP('test');
+    $http->set_safe_mode(true, ['127.0.0.0/8'], function($host) {
+      // Nothing listens on 127.0.0.3, so this only succeeds if curl can fall back to 127.0.0.1
+      return $host === 'pinned.example' ? ['127.0.0.1', '127.0.0.3'] : [];
+    });
+    $response = $http->get('http://pinned.example:' . self::$port . '/');
+    $this->assertSame(200, $response['code']);
+    $this->assertSame('host=pinned.example:' . self::$port, $response['body']);
+  }
+
   public function testRedirectsAreCheckedHopByHop() {
     $port = self::$port;
     $response = $this->http()->get("http://pinned.example:$port/?to=" . rawurlencode("http://127.0.0.1:$port/"));

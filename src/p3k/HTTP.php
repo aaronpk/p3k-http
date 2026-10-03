@@ -103,9 +103,11 @@ class HTTP {
 
       $pinnable = $this->_transport instanceof HTTP\Pinnable;
       if($pinnable) {
-        $this->_transport->pin_addresses(array_map(function($address) use($check) {
-          return $check['host'] . ':' . $check['port'] . ':' . (strpos($address, ':') !== false ? '[' . $address . ']' : $address);
-        }, $check['addresses']));
+        // One entry listing every address: curl keeps only the last entry for
+        // a given host and port, which would drop all but one address
+        $this->_transport->pin_addresses([$check['host'] . ':' . $check['port'] . ':' . implode(',', array_map(function($address) {
+          return strpos($address, ':') !== false ? '[' . $address . ']' : $address;
+        }, $check['addresses']))]);
       }
       try {
         $response = $this->_build_response($this->_send($method, $url, $body, $headers));

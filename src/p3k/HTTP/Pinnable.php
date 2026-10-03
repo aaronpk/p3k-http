@@ -9,8 +9,8 @@ namespace p3k\HTTP;
 interface Pinnable {
 
   /**
-   * @param array|null $resolve "host:port:address" entries, as for
-   *                            CURLOPT_RESOLVE; null lifts the restriction.
+   * @param array|null $resolve "host:port:address[,address...]" entries, as
+   *                            for CURLOPT_RESOLVE; null lifts the restriction.
    */
   public function pin_addresses($resolve);
 
