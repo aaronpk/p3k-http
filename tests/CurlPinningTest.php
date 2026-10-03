@@ -13,8 +13,11 @@ class CurlPinningTest extends TestCase {
 
   public static function setUpBeforeClass(): void {
     self::$port = 20000 + random_int(0, 9999);
+    // A command string rather than an array, which proc_open only accepts as
+    // of PHP 7.4. exec replaces the shell with the server, so proc_terminate
+    // stops the server itself rather than just the shell.
     self::$server = proc_open(
-      [PHP_BINARY, '-S', '127.0.0.1:' . self::$port, '-t', __DIR__ . '/server'],
+      'exec ' . escapeshellarg(PHP_BINARY) . ' -S 127.0.0.1:' . self::$port . ' -t ' . escapeshellarg(__DIR__ . '/server'),
       [1 => ['file', '/dev/null', 'w'], 2 => ['file', '/dev/null', 'w']],
       $pipes
     );
