@@ -91,6 +91,18 @@ class Guard {
 
   /** Every IPv4 and IPv6 address the system resolver knows for a host. */
   public static function resolve($host) {
+    // getaddrinfo, as curl itself uses, sees both address families and the
+    // hosts file. Without ext-sockets, fall back to asking for each family
+    // separately, which misses IPv6 entries in the hosts file such as ::1.
+    if(function_exists('socket_addrinfo_lookup')) {
+      $addresses = [];
+      foreach(@socket_addrinfo_lookup($host, null, ['ai_socktype' => SOCK_STREAM]) ?: [] as $info) {
+        $address = socket_addrinfo_explain($info)['ai_addr'];
+        $addresses[] = $address['sin6_addr'] ?? $address['sin_addr'];
+      }
+      return array_values(array_unique($addresses));
+    }
+
     $addresses = gethostbynamel($host) ?: [];
     $records = @dns_get_record($host, DNS_AAAA);
     foreach($records ?: [] as $record) {

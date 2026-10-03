@@ -64,6 +64,25 @@ class GuardTest extends TestCase {
     $this->assertSame(8080, $result['port']);
   }
 
+  // Uses the real system resolver: localhost is in every hosts file, and the
+  // IPv6 entry is only found through getaddrinfo, not a DNS AAAA query.
+  public function testSystemResolverReadsTheHostsFile() {
+    if(!function_exists('socket_addrinfo_lookup'))
+      $this->markTestSkipped('ext-sockets is not available');
+
+    $expected = [];
+    foreach(socket_addrinfo_lookup('localhost', null, ['ai_socktype' => SOCK_STREAM]) as $info) {
+      $address = socket_addrinfo_explain($info)['ai_addr'];
+      $expected[] = $address['sin6_addr'] ?? $address['sin_addr'];
+    }
+
+    $addresses = Guard::resolve('localhost');
+    $this->assertContains('127.0.0.1', $addresses);
+    foreach(array_unique($expected) as $address)
+      $this->assertContains($address, $addresses);
+    $this->assertSame([], Guard::resolve('nonexistent.invalid'));
+  }
+
   public function testUnresolvableHost() {
     $this->assertSame('dns_error', self::guard()->check('https://nowhere.example/')['error']);
   }
