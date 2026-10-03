@@ -124,12 +124,13 @@ class Curl implements Transport, Pinnable {
   private function _http_version() {
     if (static::$_http_version !== null)
       return static::$_http_version;
-    if (defined('CURL_HTTP_VERSION_2')) { // PHP 7.0.7
-      static::$_http_version = CURL_HTTP_VERSION_2;
-    } else if (defined('CURL_HTTP_VERSION_2_0')) { // Recommended in online articles
-      static::$_http_version = CURL_HTTP_VERSION_2_0;
+    // HTTP/2 over TLS only, and HTTP/1.1 for plain http, which is curl's own
+    // default since 7.62. Asking for HTTP/2 on plain http makes curl send an
+    // h2c Upgrade request, which some servers mishandle.
+    if (defined('CURL_HTTP_VERSION_2TLS')) { // PHP 7.0.7
+      static::$_http_version = CURL_HTTP_VERSION_2TLS;
     } else { // Linked curl might be newer than PHP, send (current) INT value anyway.
-      static::$_http_version = 3;
+      static::$_http_version = 4;
     }
     return static::$_http_version;
   }

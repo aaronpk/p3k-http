@@ -78,4 +78,13 @@ class CurlPinningTest extends TestCase {
     $this->assertSame(0, $response['code']);
     $this->assertNotSame('', $response['error_description']);
   }
+
+  // HTTP/2 is only negotiated over TLS. Plain http stays on HTTP/1.1 rather
+  // than sending an h2c Upgrade request, which some servers mishandle (PHP
+  // 7.3's built-in server drops the connection).
+  public function testPlainHttpDoesNotAttemptHttp2Upgrade() {
+    $response = (new HTTP('test'))->get('http://127.0.0.1:' . self::$port . '/?upgrade=1');
+    $this->assertSame(200, $response['code']);
+    $this->assertSame('upgrade=', $response['body']);
+  }
 }

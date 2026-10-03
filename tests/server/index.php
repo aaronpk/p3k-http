@@ -4,4 +4,8 @@ if(($_GET['to'] ?? '') !== '') {
   header('Location: ' . $_GET['to'], true, 302);
   exit;
 }
+if(isset($_GET['upgrade'])) {
+  echo 'upgrade=' . ($_SERVER['HTTP_UPGRADE'] ?? '');
+  exit;
+}
 echo 'host=' . ($_SERVER['HTTP_HOST'] ?? '');
